@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Scripture Lifeline</title>
+
+<meta name="theme-color" content="#2563eb">
+
+<style>
+
+:root{
+--bg:#f4f4f4;
+--card:#ffffff;
+--text:#222;
+--primary:#2563eb;
+}
+
+.dark{
+--bg:#111827;
+--card:#1f2937;
+--text:#f9fafb;
+}
+
+body{
+font-family:Arial,sans-serif;
+background:var(--bg);
+color:var(--text);
+margin:0;
+padding:20px;
+transition:.3s;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+}
+
+.card{
+background:var(--card);
+padding:15px;
+border-radius:12px;
+margin-bottom:15px;
+box-shadow:0 2px 6px rgba(0,0,0,.15);
+}
+
+input,
+textarea{
+width:100%;
+padding:10px;
+margin-top:6px;
+margin-bottom:10px;
+border-radius:8px;
+border:1px solid #ccc;
+box-sizing:border-box;
+}
+
+button{
+padding:10px 14px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin:4px;
+background:var(--primary);
+color:white;
+}
+
+.delete{
+background:#dc2626;
+}
+
+.challenge{
+padding:15px;
+border-radius:10px;
+background:#dbeafe;
+color:#111;
+font-size:20px;
+font-weight:bold;
+margin-top:10px;
+}
+
+.stat{
+font-size:18px;
+font-weight:bold;
+margin-bottom:8px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:10px;
+}
+
+h1{
+margin-top:0;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<h1>📖 Scripture Lifeline</h1>
+<p>The right Scripture at the right time.</p>
+
+<button onclick="toggleDarkMode()">
+🌙 Dark Mode
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>📈 Progress</h2>
+
+<div class="stat">
+🔥 Streak:
+<span id="streak">0</span>
+</div>
+
+<div class="stat">
+📚 Verses Saved:
+<span id="verseCount">0</span>
+</div>
+
+<div class="stat">
+🧠 Challenges Completed:
+<span id="challengeCount">0</span>
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>➕ Add Scripture</h2>
+
+<input id="book" placeholder="Book">
+
+<input id="chapter" placeholder="Chapter">
+
+<input id="verse" placeholder="Verse">
+
+<textarea
+id="text"
+rows="4"
+placeholder="Enter Scripture">
+</textarea>
+
+<button onclick="saveVerse()">
+Save Scripture
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>🚨 Emergency Numbers</h2>
+
+<input id="topic" placeholder="Topic">
+
+<input id="reference" placeholder="Reference">
+
+<button onclick="saveEmergency()">
+Save Emergency Number
+</button>
+
+<div id="emergencyList"></div>
+
+</div>
+
+<div class="card">
+
+<h2>📚 My Memory Bank</h2>
+
+<div id="verseList"></div>
+
+</div>
+
+<div class="card">
+
+<h2>🔤 First Letter Challenge</h2>
+
+<div id="firstLetterArea">
+Select a verse.
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>✏️ Fill In The Blank</h2>
+
+<div id="blankArea">
+Select a verse.
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>📍 Reference Challenge</h2>
+
+<div id="referenceArea">
+Select a verse.
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let verses =
+JSON.parse(localStorage.getItem("verses")) || [];
+
+let emergency =
+JSON.parse(localStorage.getItem("emergency")) || [];
+
+let challengeCount =
+parseInt(localStorage.getItem("challengeCount")) || 0;
+
+let streak =
+parseInt(localStorage.getItem("streak")) || 0;
+
+function updateStats(){
+
+document.getElementById("verseCount").innerText =
+verses.length;
+
+document.getElementById("challengeCount").innerText =
+challengeCount;
+
+document.getElementById("streak").innerText =
+streak;
+
+}
+
+function saveVerse(){
+
+const verse = {
+
+book:document.getElementById("book").value,
+
+chapter:document.getElementById("chapter").value,
+
+verse:document.getElementById("verse").value,
+
+text:document.getElementById("text").value
+
+};
+
+if(!verse.text) return;
+
+verses.push(verse);
+
+localStorage.setItem(
+"verses",
+JSON.stringify(verses)
+);
+
+loadVerses();
+updateStats();
+
+alert("Scripture Saved");
+
+}
+
+function deleteVerse(index){
+
+if(!confirm("Delete scripture?")) return;
+
+verses.splice(index,1);
+
+localStorage.setItem(
+"verses",
+JSON.stringify(verses)
+);
+
+loadVerses();
+updateStats();
+
+}
+
+function loadVerses(){
+
+const list =
+document.getElementById("verseList");
+
+list.innerHTML="";
+
+verses.forEach((v,index)=>{
+
+const div=document.createElement("div");
+
+div.className="card";
+
+div.innerHTML=`
+
+<strong>
+${v.book} ${v.chapter}:${v.verse}
+</strong>
+
+<p>${v.text}</p>
+
+<button onclick="firstLetter(${index})">
+First Letters
+</button>
+
+<button onclick="fillBlank(${index})">
+Fill Blank
+</button>
+
+<button onclick="referenceChallenge(${index})">
+Reference
+</button>
+
+<button class="delete"
+onclick="deleteVerse(${index})">
+Delete
+</button>
+
+`;
+
+list.appendChild(div);
+
+});
+
+}
+
+function firstLetter(index){
+
+challengeCount++;
+saveChallenge();
+
+const verse=verses[index];
+
+const letters=
+verse.text
+.split(" ")
+.map(word=>word.charAt(0))
+.join(" ");
+
+document.getElementById(
+"firstLetterArea"
+).innerHTML=
+`<div class="challenge">${letters}</div>`;
+
+}
+
+function fillBlank(index){
+
+challengeCount++;
+saveChallenge();
+
+const verse=verses[index];
+
+const words=
+verse.text.split(" ");
+
+const result=
+words.map((word,i)=>{
+
+if(i%3===0){
+return "_____";
+}
+
+return word;
+
+}).join(" ");
+
+document.getElementById(
+"blankArea"
+).innerHTML=
+`<div class="challenge">${result}</div>`;
+
+}
+
+function referenceChallenge(index){
+
+challengeCount++;
+saveChallenge();
+
+const verse=verses[index];
+
+document.getElementById(
+"referenceArea"
+).innerHTML=
+`
+<div class="challenge">
+
+${verse.text}
+
+<br><br>
+
+Book: _______
+
+<br><br>
+
+Chapter: _______
+
+<br><br>
+
+Verse: _______
+
+</div>
+`;
+
+}
+
+function saveChallenge(){
+
+localStorage.setItem(
+"challengeCount",
+challengeCount
+);
+
+updateStats();
+
+}
+
+function saveEmergency(){
+
+const item={
+
+topic:
+document.getElementById("topic").value,
+
+reference:
+document.getElementById("reference").value
+
+};
+
+if(!item.topic) return;
+
+emergency.push(item);
+
+localStorage.setItem(
+"emergency",
+JSON.stringify(emergency)
+);
+
+loadEmergency();
+
+}
+
+function loadEmergency(){
+
+const list=
+document.getElementById("emergencyList");
+
+list.innerHTML="";
+
+emergency.forEach((e)=>{
+
+const div=document.createElement("div");
+
+div.className="card";
+
+div.innerHTML=
+`
+<strong>${e.topic}</strong>
+<br>
+${e.reference}
+`;
+
+list.appendChild(div);
+
+});
+
+}
+
+function toggleDarkMode(){
+
+document.body.classList.toggle("dark");
+
+localStorage.setItem(
+"darkMode",
+document.body.classList.contains("dark")
+);
+
+}
+
+if(
+localStorage.getItem("darkMode")==="true"
+){
+document.body.classList.add("dark");
+}
+
+if(localStorage.getItem("lastVisit")){
+
+const last=
+new Date(localStorage.getItem("lastVisit"));
+
+const today=
+new Date();
+
+if(
+today.toDateString() !==
+last.toDateString()
+){
+streak++;
+}
+}
+else{
+streak=1;
+}
+
+localStorage.setItem(
+"streak",
+streak
+);
+
+localStorage.setItem(
+"lastVisit",
+new Date()
+);
+
+loadVerses();
+loadEmergency();
+updateStats();
+
+</script>
+
+</body>
+</html>
