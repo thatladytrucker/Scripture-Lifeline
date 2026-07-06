@@ -368,6 +368,31 @@ list.appendChild(div);
 
 }
 
+function loadDailyVerse(){
+
+const area = document.getElementById("dailyVerse");
+
+if(verses.length===0){
+
+area.innerHTML="No scriptures saved yet.";
+
+return;
+
+}
+
+const random =
+Math.floor(Math.random()*verses.length);
+
+const v = verses[random];
+
+area.innerHTML=`
+<h3>${v.book} ${v.chapter}:${v.verse}</h3>
+
+<p>${v.text}</p>
+`;
+
+}
+    
 function firstLetter(index){
 
 challengeCount++;
