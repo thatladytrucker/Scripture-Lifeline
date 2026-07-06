@@ -322,10 +322,14 @@ div.className="card";
 div.innerHTML=`
 
 <strong>
-${v.book} ${v.chapter}:${v.verse}
+${v.book} ${v.chapter}:${v.verse} (${v.mastery || 0}%)
 </strong>
 
 <p>${v.text}</p>
+
+<button onclick="checkQuiz(${index}, 'book')">Guess Book</button>
+<button onclick="checkQuiz(${index}, 'chapter')">Guess Chapter</button>
+<button onclick="checkQuiz(${index}, 'verse')">Guess Verse</button>
 
 <button onclick="firstLetter(${index})">
 First Letters
