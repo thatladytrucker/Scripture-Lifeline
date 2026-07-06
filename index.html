@@ -286,6 +286,25 @@ loadVerses();
 updateStats();
 
 }
+function updateMastery(index, points) {
+    verses[index].mastery = Math.min(100, (verses[index].mastery || 0) + points);
+    if (verses[index].mastery === 100) alert("🏆 Verse Fully Memorized!");
+    localStorage.setItem("verses", JSON.stringify(verses));
+    loadVerses();
+}
+
+function checkQuiz(index, type) {
+    const v = verses[index];
+    const answer = prompt(`What is the ${type}?`);
+    if (!answer) return;
+    
+    if (answer.toLowerCase() === v[type].toLowerCase()) {
+        alert("Correct! +20 Mastery Points.");
+        updateMastery(index, 20);
+    } else {
+        alert(`Incorrect. The ${type} was ${v[type]}.`);
+    }
+}
 
 function loadVerses(){
 
